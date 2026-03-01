@@ -1,0 +1,1004 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -272,
+        352
+      ],
+      "id": "8333f073-003c-4c7e-b8c4-3a963f83e5ab",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=너는 보안 취약점 분석가야. 제공된 뉴스 데이터를 바탕으로 아래 JSON 형식으로만 응답해. \n불필요한 설명이나 인사를 포함하면 시스템이 오류를 일으키니 절대 금지해.\n\n{\n  \"title\": \"{{ $json.title }}\",\n  \"target_service\": \"취약점이 발견된 구체적인 소프트웨어/서비스 명칭\",\n  \"severity\": \"Critical/High/Medium/Low 중 선택\",\n  \"summary\": \"취약점 핵심 내용 요약\",\n  \"cve_id\": \"CVE 번호 (없으면 N/A)\",\n  \"solution\": \"업데이트 등 해결 방안\"\n}",
+        "options": {
+          "batching": {
+            "batchSize": 1,
+            "delayBetweenBatches": 2000
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1040,
+        816
+      ],
+      "id": "41b88cae-2263-42ba-8078-afea91911530",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        1040
+      ],
+      "id": "e04774ca-f2c8-42a6-ae89-07d85170d355",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "rpofL8gEeeVD3y7o",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "vulnerability_news",
+          "mode": "list",
+          "cachedResultName": "vulnerability_news"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{ $json.title }}",
+            "summary": "={{ $json.summary }}",
+            "cve_id": "={{ $json.cve_id }}",
+            "target_service": "={{ $json.target_service }}",
+            "severity": "={{ $json.severity }}",
+            "solution": "={{ $json.solution }}",
+            "link": "={{ $json.link }}",
+            "created_at": "={{ $json.pubDate }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cve_id",
+              "displayName": "cve_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "target_service",
+              "displayName": "target_service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "solution",
+              "displayName": "solution",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2064,
+        816
+      ],
+      "id": "e7b5b05c-6ede-49d9-85bf-dfba789f7cb0",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "KkHCwXxDY6eBxB1w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const outputText = $json.output || \"\";\nconst jsonMatch = outputText.match(/\\{[\\s\\S]*\\}/);\n\nif (!jsonMatch) {\n    throw new Error(\"AI 응답에서 JSON 형식을 찾을 수 없습니다.\");\n}\n\nconst aiResult = JSON.parse(jsonMatch[0]);\n\n// 에러 방지를 위해 노드 데이터를 변수에 먼저 담습니다.\n// 노드 이름이 'Filter'인지 'Filter1'인지 확인 후 아래 이름을 수정하세요.\nconst originalData = $(\"Filter\").first().json; \n\nreturn {\n  ...aiResult,\n  original_title: originalData[\"title\"],\n  link: originalData[\"link\"],\n  pubDate: originalData[\"pubDate\"]\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        816
+      ],
+      "id": "7b277799-1e85-4f47-b278-92047e0fd22e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM CMDB ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2368,
+        816
+      ],
+      "id": "ed33be56-04ce-4c2a-b6e6-9f102f3dd9f6",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "KkHCwXxDY6eBxB1w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 방금 저장한 뉴스 정보 (vulnerability_news 테이블 Insert 노드 결과)\nconst news = $node[\"Insert rows in a table\"].json;\n\n// 2. CMDB 전체 리스트 가져오기 (PostgreSQL 노드명 확인)\nconst cmdbData = $(\"Execute a SQL query\").all();\n\nlet alerts = [];\n\n// 3. 뉴스 속 target_service와 우리 CMDB 비교\nfor (const asset of cmdbData) {\n  const assetJson = asset.json;\n  const serviceName = (assetJson.service_name || \"\").toLowerCase();\n  const targetService = (news.target_service || \"\").toLowerCase();\n\n  // 서비스 이름 매칭 확인\n  if (targetService.includes(serviceName) || serviceName.includes(targetService)) {\n    alerts.push({\n      json: {\n        is_matched: true,\n        asset_id: assetJson.id,\n        news_id: news.id,\n        alert_level: news.severity,\n        asset_name: assetJson.asset_name,\n        service_info: `${assetJson.service_name} (v${assetJson.service_version})`,\n        news_title: news.title,\n        cve_id: news.cve_id,\n        target_version: news.target_version // 필요시 AI 추출 데이터에 포함\n      }\n    });\n  }\n}\n\n// 4. 매칭된 결과가 있을 때만 해당 리스트 반환, 없으면 false 상태 전송\nreturn alerts.length > 0 ? alerts : [{ json: { is_matched: false } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        816
+      ],
+      "id": "e50361c2-e8cc-4109-95ec-cf3cf3cc5cbe",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "security_alerts",
+          "mode": "list",
+          "cachedResultName": "security_alerts"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "asset_id": "={{ $('Code in JavaScript1').item.json.asset_id }}",
+            "news_id": "={{ $('Code in JavaScript1').item.json.news_id }}",
+            "alert_level": "={{ $('Code in JavaScript1').item.json.alert_level }}",
+            "status": "Open"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "asset_id",
+              "displayName": "asset_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "news_id",
+              "displayName": "news_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "alert_level",
+              "displayName": "alert_level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "detected_at",
+              "displayName": "detected_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3360,
+        800
+      ],
+      "id": "bfd72867-4d79-46eb-b800-e8d2677f5035",
+      "name": "Insert rows in a table1",
+      "credentials": {
+        "postgres": {
+          "id": "KkHCwXxDY6eBxB1w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "kmc12291@naver.com",
+        "toEmail": "kmc12291@naver.com",
+        "subject": "🚨 [보안 알림] 관리 자산 취약점 감지!",
+        "emailFormat": "text",
+        "text": "=[보안 뉴스 데일리 리포트]\n오늘 분석된 주요 취약점 정보입니다.\n\n- 제목: {{ $(\"Insert rows in a table\").first().json.title }}\n- 요약: {{ $(\"Insert rows in a table\").first().json.summary }}\n- 대응 방안: {{ $(\"Insert rows in a table\").first().json.solution }}\n- 관련 서비스: {{ $(\"Insert rows in a table\").first().json.target_service }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        3760,
+        800
+      ],
+      "id": "4cebf9ee-ce43-4666-997c-889da516a87e",
+      "name": "Send email",
+      "webhookId": "7ebb91b6-62d1-4579-ac56-218e5e9a91bc",
+      "credentials": {
+        "smtp": {
+          "id": "5vQBkd4RaE1Q5PzS",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "kmc12291@naver.com",
+        "toEmail": "alfhsenglishkimyumin@gmail.com",
+        "subject": "📰 오늘자 주요 보안 뉴스 요약",
+        "html": "={{ $json.html_report }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        240
+      ],
+      "id": "d8864863-9b38-4f91-93e5-4578bf7cca7d",
+      "name": "Send email2",
+      "webhookId": "82ab6d78-9ba5-437e-b893-5a137625749e",
+      "credentials": {
+        "smtp": {
+          "id": "5vQBkd4RaE1Q5PzS",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 모든 데이터 가져오기\nconst allItems = items;\nlet boan = [], daily = [], kisa = [], hackers = [], bleeping = [];\n\n// [특수 로직] 보안뉴스 전용 한글 복구 함수\nfunction fixBoanTitle(text) {\n    if (!text) return \"제목 없음\";\n    // 보안뉴스 특유의 깨진 유니코드 패턴을 한글/숫자/영문만 남기고 정제\n    return String(text)\n        .replace(/[^\\uAC00-\\uD7AF\\u1100-\\u11FF\\u3130-\\u318F\\u0020-\\u007E]/g, \"\") \n        .replace(/\\s+/g, ' ') // 중복 공백 제거\n        .trim();\n}\n\n// 2. 분류 및 제목 교정\nallItems.forEach(item => {\n    let rawTitle = item.json.title || \"제목 없음\";\n    const link = (item.json.link || \"\").toLowerCase();\n    \n    // 보안뉴스라면 제목 복구 로직 가동\n    let cleanTitle = link.includes('boannews') ? fixBoanTitle(rawTitle) : rawTitle;\n\n    const data = { title: cleanTitle, link: item.json.link };\n\n    if (link.includes('boannews')) boan.push({ ...data, tag: '[보안뉴스]', color: '#d32f2f' });\n    else if (link.includes('dailysecu')) daily.push({ ...data, tag: '[데일리시큐]', color: '#1a73e8' });\n    else if (link.includes('krcert') || link.includes('knvd')) kisa.push({ ...data, tag: '[KISA]', color: '#2e7d32' });\n    else if (link.includes('thehackernews')) hackers.push({ ...data, tag: '[TheHackerNews]', color: '#f57c00' });\n    else if (link.includes('bleepingcomputer')) bleeping.push({ ...data, tag: '[BleepingComp]', color: '#455a64' });\n});\n\n// 3. 골고루 7개씩 추출 및 믹스\nconst finalSelection = [\n    ...boan.slice(0, 7),\n    ...daily.slice(0, 7),\n    ...kisa.slice(0, 7),\n    ...hackers.slice(0, 7),\n    ...bleeping.slice(0, 7)\n];\nfinalSelection.sort(() => 0.5 - Math.random());\n\n// 4. HTML 생성\nlet html = `<div style=\"font-family: 'Malgun Gothic', sans-serif; padding: 20px; background-color: #f4f7f9;\">\n    <h2 style=\"color: #333; border-bottom: 3px solid #d32f2f; padding-bottom: 10px;\">🛡️ 통합 보안 뉴스레터</h2>`;\n\nfinalSelection.forEach(n => {\n    html += `\n    <div style=\"background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 5px solid ${n.color};\">\n        <span style=\"color: ${n.color}; font-weight: bold; font-size: 11px;\">${n.tag}</span><br>\n        <a href=\"${n.link}\" target=\"_blank\" style=\"text-decoration: none; color: #333; font-weight: bold; font-size: 15px;\">${n.title}</a>\n    </div>`;\n});\n\nreturn [{ json: { html_report: html + \"</div>\" } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        240
+      ],
+      "id": "b5cf1796-5f60-424a-957c-e1f35e0f7397",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "url": "https://www.dailysecu.com/rss/allArticle.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        96
+      ],
+      "id": "ee2c706c-16ed-4261-8b44-0adf29953c62",
+      "name": "RSS Read1"
+    },
+    {
+      "parameters": {
+        "url": " http://knvd.krcert.or.kr/rss/securityInfo.do",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        288
+      ],
+      "id": "2728611d-ef3a-4231-abb0-892e402e4e64",
+      "name": "RSS Read2"
+    },
+    {
+      "parameters": {
+        "url": "https://www.bleepingcomputer.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        640
+      ],
+      "id": "7533b8cd-6543-4369-9055-2569162366c1",
+      "name": "RSS Read4"
+    },
+    {
+      "parameters": {
+        "url": "https://feeds.feedburner.com/TheHackersNews?format=xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        464
+      ],
+      "id": "8336ffa5-0a87-4192-8da3-e4969995733b",
+      "name": "RSS Read3"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        464,
+        208
+      ],
+      "id": "ab266ad0-c25a-4e25-af15-3b24f89e7cbb",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "379adc41-86f8-4546-9abb-30cd3e31dc3b",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "공격",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "a629add8-456c-4c4a-b0eb-51830d2426dd",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "CVE",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "614ad386-1d87-4f9a-b4a9-913c8f03f2d2",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "보안 ",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "88b2b4a1-3ecc-40c7-9be8-0690b9c5561a",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "권고",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "4f9e8697-539b-4384-a5c7-957610eb77f8",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "취약점",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "3e63c56a-9eeb-4b25-a734-90a1086e8507",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "해킹 ",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "e4bc5589-f6f0-48d5-94cb-393f8939ebd3",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "악성코드",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "2e9c96e5-cd90-473b-a9ba-91ce0e4f34ec",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "방화벽",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "d82d3b67-26ca-4290-afee-717d4e700a93",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "침해",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "f2d1974c-f9f7-48d3-bf99-88cdf2d445b1",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "개인정보",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        240,
+        96
+      ],
+      "id": "c3a40e68-bdc6-41a2-ace5-5095e1863fb1",
+      "name": "Filter2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "736effb1-713e-4440-8176-619bfd66627f",
+              "leftValue": "={{ $json.is_matched }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3024,
+        816
+      ],
+      "id": "85870a58-421b-4510-8ead-9db363371a4a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "379adc41-86f8-4546-9abb-30cd3e31dc3b",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "공격",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "a629add8-456c-4c4a-b0eb-51830d2426dd",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "CVE",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "614ad386-1d87-4f9a-b4a9-913c8f03f2d2",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "보안 ",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "88b2b4a1-3ecc-40c7-9be8-0690b9c5561a",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "권고",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "4f9e8697-539b-4384-a5c7-957610eb77f8",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "취약점",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "3e63c56a-9eeb-4b25-a734-90a1086e8507",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "해킹 ",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "e4bc5589-f6f0-48d5-94cb-393f8939ebd3",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "악성코드",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "2e9c96e5-cd90-473b-a9ba-91ce0e4f34ec",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "방화벽",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "d82d3b67-26ca-4290-afee-717d4e700a93",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "침해",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "f2d1974c-f9f7-48d3-bf99-88cdf2d445b1",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "개인정보",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        704,
+        832
+      ],
+      "id": "7abe4a42-a3bb-4fd1-8a34-54e904f4e6c6",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "url": "=https://services.nvd.nist.gov/rest/json/cves/2.0?cveId={{ $json.cve_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1392,
+        480
+      ],
+      "id": "4367dd7f-0e0d-4dc2-8c1b-2fae61d3c163",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "=GET",
+        "url": "=https://api.shodan.io/shodan/host/{{ '8.8.8.8' }}?key=3uGnaPd2MA6ZC0RGkLU2ZIg3b5SadUTl",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1600,
+        480
+      ],
+      "id": "059ed28e-5c8b-4ac6-9477-3933c8143bf2",
+      "name": "HTTP Request1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table1": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Send email2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read1": {
+      "main": [
+        [
+          {
+            "node": "Filter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "RSS Read4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "RSS Read3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "2c42b556-4612-4383-abd8-aca476655ffe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8ca76506797c0df0986ee554bb8eadfbf5060121bff044234b95ce38f88b851c"
+  },
+  "id": "VpkhkCRIiL_As-L0argan",
+  "tags": []
+}
