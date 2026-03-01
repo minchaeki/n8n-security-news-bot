@@ -321,13 +321,52 @@ CREATE TABLE IF NOT EXISTS security_alerts (
 
 ## 🛠️ 기술 스택
 
-| 분류 | 기술 |
-|------|------|
-| 자동화 | n8n |
-| AI 분석 | Groq (LLaMA 기반) |
-| 데이터베이스 | PostgreSQL |
-| 알림 | SMTP 이메일 |
-| 언어 | JavaScript (n8n Code 노드) |
+
+<table>
+  <tr>
+    <th align="left">Category</th>
+    <th align="left">Stack</th>
+  </tr>
+
+  <tr>
+    <td><b>Automation</b></td>
+    <td>
+      <img src="https://img.shields.io/badge/n8n-FF6D5A?style=for-the-badge&logo=n8n&logoColor=white"/>
+    </td>
+  </tr>
+
+  <tr>
+    <td><b>AI Analysis</b></td>
+    <td>
+      <img src="https://img.shields.io/badge/Groq-000000?style=for-the-badge&logo=groq&logoColor=white"/>
+      <img src="https://img.shields.io/badge/LLaMA-4A4A4A?style=for-the-badge"/>
+    </td>
+  </tr>
+
+  <tr>
+    <td><b>Database</b></td>
+    <td>
+      <img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white"/>
+    </td>
+  </tr>
+
+  <tr>
+    <td><b>Notification</b></td>
+    <td>
+      <img src="https://img.shields.io/badge/SMTP-0078D4?style=for-the-badge&logo=gmail&logoColor=white"/>
+      <img src="https://img.shields.io/badge/Email-6C757D?style=for-the-badge&logo=minutemailer&logoColor=white"/>
+    </td>
+  </tr>
+
+  <tr>
+    <td><b>Language</b></td>
+    <td>
+      <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black"/>
+      <img src="https://img.shields.io/badge/n8n%20Code%20Node-FF6D5A?style=for-the-badge"/>
+    </td>
+  </tr>
+
+</table>
 
 <br>
 
