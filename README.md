@@ -97,8 +97,7 @@ Schedule Trigger
 
 ```javascript
 // 소스별 분류 및 색상 태그 지정
-if (link.includes('boannews'))        boan.push({ ...data, tag: '[보안뉴스]',     color: '#d32f2f' });
-else if (link.includes('dailysecu'))  daily.push({ ...data, tag: '[데일리시큐]',  color: '#1a73e8' });
+if (link.includes('dailysecu'))  daily.push({ ...data, tag: '[데일리시큐]',  color: '#1a73e8' });
 else if (link.includes('krcert'))     kisa.push({ ...data, tag: '[KISA]',        color: '#2e7d32' });
 else if (link.includes('thehackernews')) hackers.push({ ...data, tag: '[TheHackerNews]', color: '#f57c00' });
 else if (link.includes('bleepingcomputer')) bleeping.push({ ...data, tag: '[BleepingComp]', color: '#455a64' });
@@ -129,7 +128,7 @@ finalSelection.sort(() => 0.5 - Math.random());
 ### 동작 순서
 
 ```
-Filter (보안 관련 키워드 포함 뉴스만 통과)
+Filter (취약점,해킹 및 공격 관련 키워드 포함 뉴스만 통과)
     │
     ▼
 AI Agent (Groq) — 뉴스 분석 및 구조화
